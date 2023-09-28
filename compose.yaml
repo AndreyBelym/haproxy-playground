@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  server-with-healtchecks:
+    profiles:
+      - healtchecks
+    deploy:
+      replicas: 3
+    extends:
+      file: ./prepared/server-with-healtchecks/compose.yaml
+      service: server
+
+  balancer-with-healtchecks:
+    profiles:
+      - healtchecks
+    extends:
+      file: ./prepared/balancer/compose.yaml
+      service: balancer
+    environment:
+      - SERVICE_HOSTNAME=server-with-healtchecks:1337
+      - ENABLE_ACTIVE_HEALTHCHECKS=1
+    ports:
+      - 1338:80
+
+  server-with-dataplane:
+    profiles:
+      - dataplane
+    deploy:
+      replicas: 3
+    extends:
+      file: ./prepared/server-with-dataplane/compose.yaml
+      service: server
+    environment:
+      - HAPROXY_API=http://balancer-with-dataplane:5555
+      - HAPROXY_BACKEND=main
+      - HAPROXY_USER=developer
+      - HAPROXY_PASSWORD=developer
+
+  balancer-with-dataplane:
+    profiles:
+      - dataplane
+    extends:
+      file: ./prepared/balancer/compose.yaml
+      service: balancer
+    environment:
+      - SERVICE_HOSTNAME=server-with-dataplane:1337
+      - ENABLE_DATAPLANE=1
+    ports:
+      - 1339:80
+      - 5555:5555

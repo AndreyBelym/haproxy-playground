@@ -1,0 +1,7 @@
+version: "3.9"
+
+services:
+  balancer:
+    image: haproxytech/haproxy-alpine:2.8
+    volumes:
+      - ./configs:/usr/local/etc/haproxy:rw

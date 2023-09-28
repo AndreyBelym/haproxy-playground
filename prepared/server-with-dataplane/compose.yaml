@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  server:
+    image: node:20-alpine3.18
+    volumes:
+      - ./scripts:/app
+    command: node /app
